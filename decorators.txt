@@ -1,0 +1,129 @@
+# import time
+#
+# def decorator_time(fn):
+#     def wrapper():
+#         print(f'Started function {fn}.')
+#         start_time = time.perf_counter()
+#         result = fn()
+#         time_for_completion = time.perf_counter() - start_time
+#         print(f'Function completed. Time: {time_for_completion:.10f}.')
+#         return time_for_completion
+#     return wrapper
+#
+# def pow_2():
+#     return 10000000 ** 2
+#
+# def in_build_pow():
+#     return pow(10000000, 2)
+#
+# pow_2 = decorator_time(pow_2)
+# in_build_pow = decorator_time(in_build_pow)
+#
+# pow_2()
+# in_build_pow()
+#
+
+
+
+
+
+# 4.5.1
+
+import time
+
+N = 100
+def decorator_time(fn):
+    def wrapper():
+        start_time = time.perf_counter()
+        result = fn()
+        complete_time = time.perf_counter() - start_time
+        return complete_time
+    return wrapper
+
+def pow_5():
+    return 1000000 ** 5
+
+def built_in_pow():
+    return pow(1000000, 5)
+
+pow_5 = decorator_time(pow_5)
+built_in_pow = decorator_time(built_in_pow)
+
+average_ex_pow = 0
+average_ex_built_in_pow = 0
+
+for fn in range(N):
+    average_ex_pow += pow_5()
+    average_ex_built_in_pow += built_in_pow()
+
+print(f'Function {pow_5} has been executed {N} times. Average time: {average_ex_pow / N:.10f}.')
+print('-------------')
+print(f'Function {built_in_pow} has been executed {N} times. Average time: {average_ex_built_in_pow / N:.10f}.')
+
+
+
+
+
+
+def do_it_twice(fn):
+    def wrapper(*args, **kwargs):
+        fn(*args, **kwargs)
+        fn(*args, **kwargs)
+    return wrapper
+
+@do_it_twice
+def say_word(word):
+    print(word)
+
+say_word('Hej!')
+
+
+
+
+
+# 4.5.2
+def decorator_count(fn):
+    count = 0
+    def wrapper(*args, **kwargs):
+        nonlocal count
+        result = fn()
+        count += 1
+        print(f'Function {fn} was executed {count} times.')
+        return count
+    return wrapper
+
+@decorator_count
+def my_fn():
+    print('DONE!')
+
+my_fn()
+my_fn()
+my_fn()
+
+
+
+
+
+#4.5.3
+def cache(fn):
+    fn_dict = {}
+    def wrapper(num):
+        nonlocal fn_dict
+        if num in fn_dict:
+            print(f'Returning result from cache {fn_dict[num]}.')
+        else:
+            fn_dict[num] = fn(num)
+            print(f'Result is saved to cache {fn_dict[num]}.')
+        return fn_dict
+    return wrapper
+
+
+@cache
+def f(n):
+    return n * 123456789
+
+
+f(5)
+f(10)
+f(5)
+
