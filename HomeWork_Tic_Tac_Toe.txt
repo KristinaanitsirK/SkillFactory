@@ -1,0 +1,25 @@
+
+def greeting():
+    print(f"Hello! \n"
+          f"Here is 'Noughts an crosses' game. \n"
+          f"RULES: To make your move, you need \n"
+          f"to enter the coordinates of the cell: \n"
+          f"first vertically (X)! \n"
+          f"second horizontally (Y)! \n"
+          f"Enter gamers's names and let's play! \n"
+          "--------------------------------------")
+
+    player_1 = input("Enter first player's name: ")
+    player_2 = input("Enter second player's name: ")
+
+greeting()
+
+
+field = [[' ' for i in range(4)] for j in range(4)]
+
+field[0][0] = 'X  Y'
+for i in range(1, 4):
+    field[i] = f" {i} "
+
+for j in range(1, 4):
+    field[0][j] = f'{j}'
