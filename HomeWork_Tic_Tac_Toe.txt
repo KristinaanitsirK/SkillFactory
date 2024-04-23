@@ -1,3 +1,18 @@
+field = [[' ' for i in range(4)] for j in range(4)]
+
+field[0][0] = 'X  Y'
+field[0][1], field[1][0] = '1', '  1 '
+field[0][2], field[2][0] = '2', '  2 '
+field[0][3], field[3][0] = '3', '  3 '
+field[2][2] = 'X'
+
+def board_draw():
+    for row in field:
+        row_view = f"{' | '.join(row)} |"
+        print(row_view)
+        print('------------------')
+    print()
+
 
 def greeting():
     print(f"Hello! \n"
@@ -8,18 +23,9 @@ def greeting():
           f"second horizontally (Y)! \n"
           f"Enter gamers's names and let's play! \n"
           "--------------------------------------")
+    board_draw()
 
     player_1 = input("Enter first player's name: ")
     player_2 = input("Enter second player's name: ")
 
 greeting()
-
-
-field = [[' ' for i in range(4)] for j in range(4)]
-
-field[0][0] = 'X  Y'
-for i in range(1, 4):
-    field[i] = f" {i} "
-
-for j in range(1, 4):
-    field[0][j] = f'{j}'
