@@ -1,12 +1,11 @@
-board = [[' ' for i in range(4)] for j in range(4)]
+def players_names():
+    player_1 = input("Enter first player's name: ")
+    player_2 = input("Enter second player's name: ")
 
-board[0][0] = ' X|Y'
-board[0][1], board[1][0] = '1', '  1 '
-board[0][2], board[2][0] = '2', '  2 '
-board[0][3], board[3][0] = '3', '  3 '
-board[2][2] = 'X'
+    return player_1, player_2
 
-def board_draw():
+
+def board_draw(board):
     for row in board:
         row_view = f"{' | '.join(row)} |"
         print(row_view)
@@ -19,23 +18,18 @@ def greeting():
           f"Here is 'Noughts an crosses' game. \n"
           f"RULES: To make your move, you need \n"
           f"to enter the coordinates of the cell: \n"
-          f"first vertically (X)! \n"
-          f"second horizontally (Y)! \n"
+          f"first horizontally (X), \n"
+          f"second vertically (Y)! \n"
           f"Separate entered coordinates with SPACE! \n"
           f"Enter gamers's names and let's play! \n"
           "--------------------------------------")
-    board_draw()
 
 
-player_1 = input("Enter first player's name: ")
-player_2 = input("Enter second player's name: ")
-
-
-def move():
+def move(board):
     while True:
         coordinates = input(('Enter coordinates for move: ')).split()
 
-        if len(coordinates) > 2:
+        if len(coordinates) > 2 or len(coordinates) < 2:
             print('Please enter TWO coordinates!')
             continue
 
@@ -58,7 +52,7 @@ def move():
         return x, y
 
 
-def check_win():
+def check_win(board):
     win_comb = (
         ((1, 1), (1, 2), (1, 3)), ((2, 1), (2, 2), (2, 3)), ((3, 1), (3, 2), (3, 3)),
         ((1, 1), (2, 1), (3, 1)), ((1, 2), (2, 2), (3, 2)), ((1, 3), (2, 3), (3, 3)),
@@ -72,38 +66,67 @@ def check_win():
 
         if combination == ['X', 'X', 'X']:
             print('Crosses win!')
+            board_draw(board)
             return True
 
         if combination == ['0', '0', '0']:
             print('Noughts win!')
+            board_draw(board)
             return True
 
     return False
 
+def play():
+    while True:
+        board = [[' ' for j in range(4)] for i in range(4)]
 
-count_move = 0
+        board[0][0] = 'X|Y'
+        board[0][1], board[1][0] = '1', '  1'
+        board[0][2], board[2][0] = '2', '  2'
+        board[0][3], board[3][0] = '3', '  3'
 
-while True:
-    count_move += 1
+        greeting()
+        board_draw(board)
 
-    # board_draw()
+        game(board)
 
-    if count_move % 2 == 1:
-        print(f"{player_1}'s turn for X!")
-    else:
-        print(f"{player_2}'s turn for O!")
 
-    x, y = move()
+        print('Do you want to play one more time?')
+        play_again = input('Press Y or N: ')
 
-    if count_move % 2 == 1:
-        board[x][y] = 'X'
-    else:
-        board[x][y] = '0'
+        if play_again not in ('Y', 'y'):
+            break
 
-    if check_win():
-        break
 
-    if count_move == 9:
-        print('Game draw!')
-        board_draw()
-        break
+
+def game(board):
+    player_1, player_2 = players_names()
+    count_move = 0
+
+    while True:
+
+        count_move += 1
+
+        board_draw(board)
+
+        if count_move % 2 == 1:
+            print(f"{player_1}'s turn for X!")
+        else:
+            print(f"{player_2}'s turn for O!")
+
+        x, y = move(board)
+
+        if count_move % 2 == 1:
+            board[x][y] = 'X'
+        else:
+            board[x][y] = '0'
+
+        if check_win(board):
+            break
+
+        if count_move == 9:
+            print('Game draw!')
+            break
+
+
+play()
