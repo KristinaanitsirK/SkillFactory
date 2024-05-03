@@ -25,7 +25,7 @@ def board_draw(board):
     for row in board:
         row_view = f"{' | '.join(row)} |"
         print(row_view)
-        print('------------------')
+        print('-----------------')
     print()
 
 
