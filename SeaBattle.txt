@@ -1,0 +1,56 @@
+class Dot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return f'Dot({self.x}, {self.y})'
+
+class BoardException:
+    pass
+
+class BoardOutException(BoardException):
+    def __str__(self):
+        return 'YOU ARE SHOOTING OUT OF THE BOARD!'
+
+class UsedCellException(BoardException):
+    def __str__(self):
+        return 'YOU HAVE ALREADY SHOT INTO THIS CELL!'
+
+class BoardWrongShipException(BoardException):
+    pass
+
+class Ship:
+    def __init__(self, dot, length, orientation):
+        self.dot = dot
+        self.length = length
+        self.orientation = orientation
+
+    @property
+    def dots(self):
+        ship_dots = []
+        for i in range(self.length):
+            new_x = self.dot.x
+            new_y = self.dot.y
+
+            if self.orientation == 0:
+                new_x += 1
+            if self.orientation == 1:
+                new_y += 1
+
+            ship_dots.append(Dot(new_x, new_y))
+            
+        return ship_dots
+    
+    
+    
+
+
+
+
+
+
+
