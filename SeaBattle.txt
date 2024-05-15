@@ -9,7 +9,7 @@ class Dot:
     def __repr__(self):
         return f'Dot({self.x}, {self.y})'
 
-class BoardException:
+class BoardException(BaseException):
     pass
 
 class BoardOutException(BoardException):
@@ -28,6 +28,7 @@ class Ship:
         self.dot = dot
         self.length = length
         self.orientation = orientation
+        self.lives = length
 
     @property
     def dots(self):
@@ -37,20 +38,78 @@ class Ship:
             new_y = self.dot.y
 
             if self.orientation == 0:
-                new_x += 1
+                new_x += i
             if self.orientation == 1:
-                new_y += 1
+                new_y += i
 
             ship_dots.append(Dot(new_x, new_y))
-            
+
         return ship_dots
-    
-    
-    
+
+    def shot_down(self, shot):
+        return shot in self.dots
+
+
+class Board:
+    def __init__(self, hide=False, size=6):
+        self.hide = hide
+        self.size = size
+
+        self.field = [['O']*size for i in range(self.size)]
+
+        self.busy_cells = []
+        self.ships = []
+
+    def __str__(self):
+        board_draw = ' '
+        board_draw += 'X|Y| 1 | 2 | 3 | 4 | 5 | 6 |'
+        for i, row in enumerate(self.field):
+            board_draw += f'\n {i+1}  | ' + ' | '.join(row) + ' | '
+
+        if self.hide:
+            board_draw = board_draw.replace('■', '0')
+
+        return board_draw
+
+    def out_of_board(self, dot):
+        return not ((0 <= dot.x < self.size) and (0 <= dot.y < self.size))
+
+
+    def contour(self, ship, verb=False):
+        dots_around = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1), (0, 0), (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        ]
+        for dot in ship.dots:
+            for dot_x, dot_y in dots_around:
+                side_dot = Dot(dot.x + dot_x, dot.y + dot_y)
+                if not (self.out_of_board(side_dot)) and side_dot not in self.busy_cells:
+                    if verb:
+                        self.field[side_dot.x][side_dot.y] = '.'
+                    self.busy_cells.append(side_dot)
+
+
+    def add_ship(self, ship):
+        for dot in ship.dots:
+            if self.out_of_board(dot) or dot in self.busy_cells:
+                raise BoardWrongShipException
+
+        for dot in ship.dots:
+            self.field[dot.x][dot.y] = '■'
+            self.busy_cells.append(dot)
+
+        self.ships.append(ship)
+        self.contour(ship)
 
 
 
 
 
 
+# ship_1 = Ship(Dot(1, 2), 4, 0)
+# print(ship_1.dots)
+b = Board()
+b.add_ship(Ship(Dot(1, 2), 4, 0))
+print(b)
 
