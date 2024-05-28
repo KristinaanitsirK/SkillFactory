@@ -66,10 +66,9 @@ class Board:
         self.count = 0
 
     def __str__(self):
-        board_draw = ' '
-        board_draw += 'X|Y| 1 | 2 | 3 | 4 | 5 | 6 |'
+        board_draw = 'X|Y| 1 | 2 | 3 | 4 | 5 | 6 |'
         for i, row in enumerate(self.field):
-            board_draw += f'\n {i+1}  | ' + ' | '.join(row) + ' | '
+            board_draw += f'\n {i+1} | ' + ' | '.join(row) + ' | '
 
         if self.hide:
             board_draw = board_draw.replace('■', '0')
@@ -124,7 +123,7 @@ class Board:
                     self.count += 1
                     self.contour(ship, verb=True)
                     print('SHIP IS DEFEATED!')
-                    return False
+                    return True
                 else:
                     print('SHIP IS DAMAGED!')
                     return True
@@ -165,9 +164,12 @@ class AI(Players):
         return dot
 
 class User(Players):
+
     def ask(self):
+
         while True:
-            coordinates = input("Your move: ").split()
+
+            coordinates = input('Your move: ').split()
 
             if len(coordinates) != 2:
                 print('Please enter TWO coordinates!')
@@ -229,41 +231,45 @@ class Game:
           f"first horizontally (X), \n"
           f"second vertically (Y)! \n"
           f"Separate entered coordinates with SPACE! \n"
-          # f"Enter gamers's names: \n"
-          # f"First one will play for X and second one \n"
-          # f"will play for O. \n"
-          f"Let's play! \n"
+          f"Enter your name an LET'S PLAY! \n"
           "--------------------------------------")
 
-    def game_loop(self):
-        num = 0
-        while True:
-            print('-'*20)
-            print("User's board: ")
-            print(self.user.board)
-            print('-'*20)
-            print("Computer's board: ")
-            print(self.ai.board)
-            print('-'*20)
 
+    def game_loop(self):
+        user_name = input('Enter your name: ')
+        num = 0
+
+        print('-' * 28)
+        print(f"{user_name}'s board: ")
+        print(self.user.board)
+        print('-' * 28)
+        print("Computer's board: ")
+        print(self.ai.board)
+        print('-' * 28)
+
+        while True:
             if num % 2 == 0:
-                print("User's move: ")
+                print('-' * 28)
+                print(f"{user_name}'s turn!")
+                print(self.ai.board)
                 repeat = self.user.move()
             else:
+                print('-' * 28)
                 print("Computer's move: ")
-                time.sleep(3.0)
+                print(self.user.board)
+                time.sleep(2.0)
                 repeat = self.ai.move()
 
             if repeat:
                 num -= 1
 
             if self.ai.board.defeat():
-                print('-'*20)
-                print('USER WIN!')
+                print('-'*28)
+                print(f'{user_name} WIN!')
                 break
 
             if self.user.board.defeat():
-                print('-'*20)
+                print('-'*28)
                 print('COMPUTER WIN!')
                 break
 
