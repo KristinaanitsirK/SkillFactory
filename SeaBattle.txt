@@ -49,7 +49,7 @@ class Ship:
 
         return ship_dots
 
-    def shot_down(self, shot):
+    def shotten(self, shot):
         return shot in self.dots
 
 
@@ -116,7 +116,7 @@ class Board:
         self.busy_cells.append(dot)
 
         for ship in self.ships:
-            if dot in ship.dots:
+            if ship.shotten(dot):
                 ship.lives -= 1
                 self.field[dot.x][dot.y] = 'X'
                 if ship.lives == 0:
@@ -187,11 +187,19 @@ class User(Players):
 
 
 class Game:
+    def __init__(self, size=6):
+        self.size = size
+        self.lengths = [3, 2, 2, 1, 1, 1, 1]
+        player_board = self.random_board()
+        comp_board = self.random_board()
+        comp_board.hide = True
+
+        self.ai = AI(comp_board, player_board)
+        self.user = User(player_board, comp_board)
     def create_board(self):
-        lengths = [3, 2, 2, 1, 1, 1, 1]
         board = Board(size = self.size)
         attempts = 0
-        for l in lengths:
+        for l in self.lengths:
             while True:
                 attempts += 1
                 if attempts > 2000:
@@ -214,14 +222,6 @@ class Game:
             board = self.create_board()
         return board
 
-    def __init__(self, size=6):
-        self.size = size
-        player_board = self.random_board()
-        comp_board = self.random_board()
-        comp_board.hide = True
-
-        self.ai = AI(comp_board, player_board)
-        self.user = User(player_board, comp_board)
 
     def greeting(self):
         print(f"Hello! \n"
@@ -265,11 +265,13 @@ class Game:
 
             if self.ai.board.defeat():
                 print('-'*28)
+                print(self.ai.board)
                 print(f'{user_name} WIN!')
                 break
 
             if self.user.board.defeat():
                 print('-'*28)
+                print(self.user.board)
                 print('COMPUTER WIN!')
                 break
 
@@ -278,11 +280,6 @@ class Game:
     def start(self):
         self.greeting()
         self.game_loop()
-
-
-
-g = Game()
-g.start()
 
 
 # ship_1 = Ship(Dot(1, 2), 4, 0)
