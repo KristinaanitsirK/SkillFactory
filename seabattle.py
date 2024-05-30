@@ -1,0 +1,297 @@
+from random import randint
+import time
+
+
+class Dot:
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
+
+    def __eq__(self, other):
+        return self.x == other.x and self.y == other.y
+
+    def __repr__(self):
+        return f'Dot({self.x}, {self.y})'
+
+
+class BoardException(BaseException):
+    pass
+
+
+class BoardOutException(BoardException):
+    def __str__(self):
+        return 'YOU ARE SHOOTING OUT OF THE BOARD!'
+
+
+class UsedCellException(BoardException):
+    def __str__(self):
+        return 'YOU HAVE ALREADY SHOT INTO THIS CELL!'
+
+
+class BoardWrongShipException(BoardException):
+    pass
+
+
+class Ship:
+    def __init__(self, dot, length, orientation):
+        self.dot = dot
+        self.length = length
+        self.orientation = orientation
+        self.lives = length
+
+    @property
+    def dots(self):
+        ship_dots = []
+        for i in range(self.length):
+            new_x = self.dot.x
+            new_y = self.dot.y
+
+            if self.orientation == 0:
+                new_x += i
+            if self.orientation == 1:
+                new_y += i
+
+            ship_dots.append(Dot(new_x, new_y))
+
+        return ship_dots
+
+    def shotten(self, shot):
+        return shot in self.dots
+
+
+class Board:
+    def __init__(self, hide=False, size=6):
+        self.hide = hide
+        self.size = size
+
+        self.field = [['O'] * size for i in range(self.size)]
+
+        self.busy_cells = []
+        self.ships = []
+
+        self.count = 0
+
+    def __str__(self):
+        board_draw = 'X|Y| 1 | 2 | 3 | 4 | 5 | 6 |'
+        for i, row in enumerate(self.field):
+            board_draw += f'\n {i + 1} | ' + ' | '.join(row) + ' | '
+
+        if self.hide:
+            board_draw = board_draw.replace('■', '0')
+
+        return board_draw
+
+    def out_of_board(self, dot):
+        return not ((0 <= dot.x < self.size) and (0 <= dot.y < self.size))
+
+    def contour(self, ship, verb=False):
+        dots_around = [
+            (-1, -1), (-1, 0), (-1, 1),
+            (0, -1), (0, 0), (0, 1),
+            (1, -1), (1, 0), (1, 1)
+        ]
+        for dot in ship.dots:
+            for dot_x, dot_y in dots_around:
+                side_dot = Dot(dot.x + dot_x, dot.y + dot_y)
+                if not (self.out_of_board(side_dot)) and side_dot not in self.busy_cells:
+                    if verb:
+                        self.field[side_dot.x][side_dot.y] = '.'
+                    self.busy_cells.append(side_dot)
+
+    def add_ship(self, ship):
+        for dot in ship.dots:
+            if self.out_of_board(dot) or dot in self.busy_cells:
+                raise BoardWrongShipException
+
+        for dot in ship.dots:
+            self.field[dot.x][dot.y] = '■'
+            self.busy_cells.append(dot)
+
+        self.ships.append(ship)
+        self.contour(ship)
+
+    def shot(self, dot):
+        if self.out_of_board(dot):
+            raise BoardOutException
+
+        if dot in self.busy_cells:
+            raise UsedCellException
+
+        self.busy_cells.append(dot)
+
+        for ship in self.ships:
+            if ship.shotten(dot):
+                ship.lives -= 1
+                self.field[dot.x][dot.y] = 'X'
+                if ship.lives == 0:
+                    self.count += 1
+                    self.contour(ship, verb=True)
+                    print('SHIP IS DEFEATED!')
+                    return True
+                else:
+                    print('SHIP IS DAMAGED!')
+                    return True
+
+        self.field[dot.x][dot.y] = '.'
+        print('MISSED!')
+        return False
+
+    def begin(self):
+        self.busy_cells = []
+
+    def defeat(self):
+        return self.count == len(self.ships)
+
+
+class Players:
+    def __init__(self, board, enemy):
+        self.board = board
+        self.enemy = enemy
+
+    def ask(self):
+        raise NotImplementedError
+
+    def move(self):
+        while True:
+            try:
+                target = self.ask()
+                repeat = self.enemy.shot(target)
+                return repeat
+            except BoardException as e:
+                print(e)
+
+
+class AI(Players):
+    def ask(self):
+        dot = Dot(randint(0, 5), randint(0, 5))
+        print(f"Computer's move: {dot.x + 1} {dot.y + 1}")
+        return dot
+
+
+class User(Players):
+    def ask(self):
+
+        while True:
+
+            coordinates = input('Your move: ').split()
+
+            if len(coordinates) != 2:
+                print('Please enter TWO coordinates!')
+                continue
+
+            x, y = coordinates
+
+            if not x.isdigit() or not y.isdigit():
+                print('Please enter NUMERIC value!')
+                continue
+
+            x, y = int(x), int(y)
+
+            return Dot(x - 1, y - 1)
+
+
+class Game:
+    def __init__(self, size=6):
+        self.size = size
+        self.lengths = [3, 2, 2, 1, 1, 1, 1]
+        player_board = self.random_board()
+        comp_board = self.random_board()
+        comp_board.hide = True
+
+        self.ai = AI(comp_board, player_board)
+        self.user = User(player_board, comp_board)
+
+    def create_board(self):
+        board = Board(size=self.size)
+        attempts = 0
+        for l in self.lengths:
+            while True:
+                attempts += 1
+                if attempts > 2000:
+                    return None
+
+                ship = Ship(Dot(randint(0, self.size), randint(0, self.size)),
+                            l, randint(0, 1))
+                try:
+                    board.add_ship(ship)
+                    break
+                except BoardWrongShipException:
+                    pass
+
+        board.begin()
+        return board
+
+    def random_board(self):
+        board = None
+        while board is None:
+            board = self.create_board()
+        return board
+
+    def greeting(self):
+        print(f"Hello! \n"
+              f"Here is 'SEA BATTLE' game. \n"
+              f"RULES: To make your move, you need \n"
+              f"to enter the coordinates of the cell: \n"
+              f"first horizontally (X), \n"
+              f"second vertically (Y)! \n"
+              f"Separate entered coordinates with SPACE! \n"
+              f"Enter your name an LET'S PLAY! \n"
+              "--------------------------------------")
+
+    def game_loop(self):
+        user_name = input('Enter your name: ')
+        num = 0
+
+        print('-' * 28)
+        print(f"{user_name}'s board: ")
+        print(self.user.board)
+        print('-' * 28)
+        print("Computer's board: ")
+        print(self.ai.board)
+        print('-' * 28)
+
+        while True:
+            if num % 2 == 0:
+                print('-' * 28)
+                print(f"{user_name}'s turn!")
+                print(self.ai.board)
+                repeat = self.user.move()
+            else:
+                print('-' * 28)
+                print("Computer's move: ")
+                print(self.user.board)
+                time.sleep(2.0)
+                repeat = self.ai.move()
+
+            if repeat:
+                num -= 1
+
+            if self.ai.board.defeat():
+                print('-' * 28)
+                print(self.ai.board)
+                print(f'{user_name} WIN!')
+                break
+
+            if self.user.board.defeat():
+                print('-' * 28)
+                print(self.user.board)
+                print('COMPUTER WIN!')
+                break
+
+            num += 1
+
+    def start(self):
+        self.greeting()
+        self.game_loop()
+
+
+
+g = Game()
+g.start()
+
+
+
+
+
+
+
